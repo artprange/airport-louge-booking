@@ -12,4 +12,12 @@ export class LoungeRepository {
 			},
 		});
 	}
+
+	findById(id: string) {
+		return this.prisma.lounge.findUnique({
+			where: {
+				id,
+			},
+		});
+	}
 }
