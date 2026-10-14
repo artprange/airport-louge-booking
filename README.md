@@ -44,3 +44,17 @@ npm run dev
 Open http://localhost:5173. The page should display the API status as `ok`.
 
 To verify compilation, run `npm run build` separately in `backend` and `frontend`.
+
+## Booking concurrency
+
+Booking creation reads lounge capacity, calculates daily occupancy, and
+inserts the reservation in a single Serializable transaction.
+
+Prisma P2034 conflicts retry the entire transaction up to three total
+attempts, with a short delay between attempts. Each retry recalculates
+occupancy. Exceeding capacity returns CAPACITY_EXCEEDED; exhausted
+transaction retries return BOOKING_CONFLICT.
+
+This protects booking creation through this application flow. It does
+not provide request idempotency: repeating a successful POST creates
+another reservation if capacity remains available.

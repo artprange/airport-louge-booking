@@ -7,11 +7,13 @@ import { LoungeService } from './services/lounge.service.js';
 import { BookingService } from './services/booking.service.js';
 
 const loungeRepository = new LoungeRepository(prisma);
-const bookingRepository = new BookingRepository(prisma);
+
+const bookingRepository = new BookingRepository();
 
 export const loungeService = new LoungeService(loungeRepository);
 
 export const bookingService = new BookingService(
 	bookingRepository,
 	loungeRepository,
+	prisma,
 );

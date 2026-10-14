@@ -1,16 +1,18 @@
-import type { PrismaClient } from '../generated/prisma/client.js';
+import type { Prisma, PrismaClient } from '../generated/prisma/client.js';
+
 import type { CreateBookingInput } from '../validators/create-booking.schema.js';
 
 export class BookingRepository {
-	constructor(private readonly prisma: PrismaClient) {}
-
-	async occupiedCapacity(loungeId: string, bookingDate: Date): Promise<number> {
-		const result = await this.prisma.booking.aggregate({
+	async occupiedCapacity(
+		db: Prisma.TransactionClient,
+		loungeId: string,
+		bookingDate: Date,
+	): Promise<number> {
+		const result = await db.booking.aggregate({
 			where: {
 				loungeId,
 				bookingDate,
 			},
-
 			_sum: {
 				guests: true,
 			},
@@ -19,8 +21,8 @@ export class BookingRepository {
 		return result._sum.guests ?? 0;
 	}
 
-	create(input: CreateBookingInput) {
-		return this.prisma.booking.create({
+	create(db: Prisma.TransactionClient, input: CreateBookingInput) {
+		return db.booking.create({
 			data: input,
 		});
 	}
