@@ -1,6 +1,7 @@
 import express from 'express';
 
 import { loungeRoutes } from './routes/lounge.routes.js';
+import { bookingRoutes } from './routes/booking.routes.js';
 import { errorHandler } from './middleware/error-handler.js';
 
 export const app = express();
@@ -14,5 +15,5 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/lounges', loungeRoutes);
-
+app.use('/bookings', bookingRoutes);
 app.use(errorHandler);

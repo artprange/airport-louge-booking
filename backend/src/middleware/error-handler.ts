@@ -18,7 +18,7 @@ export const errorHandler: ErrorRequestHandler = (
 		res.status(400).json({
 			error: {
 				code: 'VALIDATION_ERROR',
-				message: 'Invalid request parameters',
+				message: 'Invalid request data',
 			},
 		});
 
@@ -30,6 +30,21 @@ export const errorHandler: ErrorRequestHandler = (
 			error: {
 				code: error.code,
 				message: error.message,
+			},
+		});
+
+		return;
+	}
+
+	if (
+		error instanceof SyntaxError &&
+		'type' in error &&
+		error.type === 'entity.parse.failed'
+	) {
+		res.status(400).json({
+			error: {
+				code: 'INVALID_JSON',
+				message: 'Request body must contain valid JSON',
 			},
 		});
 
