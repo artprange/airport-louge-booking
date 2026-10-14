@@ -1,5 +1,7 @@
+import { CapacityExceededError } from '../errors/capacity-exceeded.error.js';
 import { InvalidBookingDateError } from '../errors/invalid-booking-date.error.js';
 import { LoungeNotFoundError } from '../errors/lounge-not-found.error.js';
+
 import { BookingRepository } from '../repositories/booking.repository.js';
 import { LoungeRepository } from '../repositories/lounge.repository.js';
 import type { CreateBookingInput } from '../validators/create-booking.schema.js';
@@ -25,6 +27,15 @@ export class BookingService {
 
 		if (!lounge) {
 			throw new LoungeNotFoundError();
+		}
+
+		const occupied = await this.bookings.occupiedCapacity(
+			input.loungeId,
+			input.bookingDate,
+		);
+
+		if (occupied + input.guests > lounge.capacity) {
+			throw new CapacityExceededError();
 		}
 
 		return this.bookings.create(input);
