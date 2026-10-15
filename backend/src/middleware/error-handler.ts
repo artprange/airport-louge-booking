@@ -3,6 +3,10 @@ import { ZodError } from 'zod';
 
 import { AppError } from '../errors/app-error.js';
 
+function hasErrorType(error: unknown, type: string): boolean {
+	return error instanceof Error && 'type' in error && error.type === type;
+}
+
 export const errorHandler: ErrorRequestHandler = (
 	error: unknown,
 	_req,
@@ -14,49 +18,38 @@ export const errorHandler: ErrorRequestHandler = (
 		return;
 	}
 
-	if (error instanceof ZodError) {
-		res.status(400).json({
-			error: {
-				code: 'VALIDATION_ERROR',
-				message: 'Invalid request data',
-			},
-		});
-
-		return;
-	}
+	let statusCode: number;
+	let code: string;
+	let message: string;
 
 	if (error instanceof AppError) {
-		res.status(error.statusCode).json({
-			error: {
-				code: error.code,
-				message: error.message,
-			},
-		});
+		statusCode = error.statusCode;
+		code = error.code;
+		message = error.message;
+	} else if (error instanceof ZodError) {
+		statusCode = 400;
+		code = 'VALIDATION_ERROR';
+		message = 'Invalid request data';
+	} else if (hasErrorType(error, 'entity.parse.failed')) {
+		statusCode = 400;
+		code = 'INVALID_JSON';
+		message = 'Request body must contain valid JSON';
+	} else if (hasErrorType(error, 'entity.too.large')) {
+		statusCode = 413;
+		code = 'PAYLOAD_TOO_LARGE';
+		message = 'Request body exceeds the allowed size';
+	} else {
+		console.error('Unhandled application error:', error);
 
-		return;
+		statusCode = 500;
+		code = 'INTERNAL_SERVER_ERROR';
+		message = 'An unexpected error occurred';
 	}
 
-	if (
-		error instanceof SyntaxError &&
-		'type' in error &&
-		error.type === 'entity.parse.failed'
-	) {
-		res.status(400).json({
-			error: {
-				code: 'INVALID_JSON',
-				message: 'Request body must contain valid JSON',
-			},
-		});
-
-		return;
-	}
-
-	console.error(error);
-
-	res.status(500).json({
+	res.status(statusCode).json({
 		error: {
-			code: 'INTERNAL_SERVER_ERROR',
-			message: 'An unexpected error occurred',
+			code,
+			message,
 		},
 	});
 };
