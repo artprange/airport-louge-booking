@@ -58,3 +58,42 @@ transaction retries return BOOKING_CONFLICT.
 This protects booking creation through this application flow. It does
 not provide request idempotency: repeating a successful POST creates
 another reservation if capacity remains available.
+
+## API errors
+
+Errors use a consistent response format:
+
+    {
+      "error": {
+        "code": "LOUNGE_NOT_FOUND",
+        "message": "Lounge not found"
+      }
+    }
+
+The API returns 400 for invalid input, 404 for missing resources or
+routes, 409 for booking conflicts, 413 for oversized request bodies,
+and 422 for past booking dates.
+
+Unexpected failures return 500 with a generic message. Technical
+details are logged on the server.
+
+## Backend tests
+
+From the backend directory:
+
+```bash
+npm test
+```
+
+The command builds the backend before running Jest. Tests use the compiled
+JavaScript with ESM support; Node may print an experimental VM Modules warning.
+
+Service tests cover booking rules, Serializable transactions, Prisma and
+PostgreSQL adapter conflicts, retries, and retry exhaustion. HTTP integration
+tests use Supertest with mocked services to verify routes, validation,
+serialization, and error handling.
+
+These tests do not require a running API or PostgreSQL and do not write to the
+database. Real database concurrency is checked separately with
+`backend/scripts/check-booking-concurrency.mjs`, which creates a booking and
+requires an unused date for each run.
