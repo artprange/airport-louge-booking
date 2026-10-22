@@ -6,6 +6,8 @@ const loungeCardStyles = {
 	capacity: 'mt-2 text-sm leading-6 text-slate-500',
 	price:
 		'mt-8 border-t border-slate-100 pt-5 text-2xl font-bold text-slate-950',
+	bookButton:
+		'mt-5 min-h-11 w-full cursor-pointer rounded-md bg-blue-700 px-4 py-2 font-medium text-white hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600',
 };
 
 export { loungeCardStyles };

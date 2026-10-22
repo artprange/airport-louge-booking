@@ -1,3 +1,7 @@
+import { useState } from 'react';
+
+import { BookingForm } from '../BookingForm';
+
 import type { LoungeCardProps } from './types';
 import { loungeCardStyles } from './styles';
 
@@ -7,6 +11,8 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
 });
 
 function LoungeCard({ lounge }: LoungeCardProps) {
+	const [isBookingOpen, setIsBookingOpen] = useState(false);
+
 	return (
 		<article className={loungeCardStyles.card}>
 			<span className={loungeCardStyles.badge}>{lounge.airportCode}</span>
@@ -20,6 +26,21 @@ function LoungeCard({ lounge }: LoungeCardProps) {
 			<p className={loungeCardStyles.price}>
 				{currencyFormatter.format(Number(lounge.price))}
 			</p>
+
+			{isBookingOpen ? (
+				<BookingForm
+					lounge={lounge}
+					onClose={() => setIsBookingOpen(false)}
+				/>
+			) : (
+				<button
+					className={loungeCardStyles.bookButton}
+					type="button"
+					onClick={() => setIsBookingOpen(true)}
+				>
+					Book lounge
+				</button>
+			)}
 		</article>
 	);
 }
