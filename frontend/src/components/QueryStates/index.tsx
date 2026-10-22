@@ -1,4 +1,4 @@
-import type { ErrorStateProps } from './types';
+import type { EmptyStateProps, ErrorStateProps } from './types';
 import { queryStatesStyles } from './styles';
 
 function LoadingState() {
@@ -14,12 +14,22 @@ function LoadingState() {
 	);
 }
 
-function EmptyState() {
+function EmptyState({ airportCode, onReset }: EmptyStateProps) {
 	return (
-		<div className={queryStatesStyles.container}>
+		<div className={queryStatesStyles.container} role="status">
+			<h3 className={queryStatesStyles.title}>
+				{airportCode ? 'No lounges available here yet.' : 'No lounges available yet.'}
+			</h3>
 			<p className={queryStatesStyles.message}>
-				No lounges found for this airport.
+				{airportCode
+					? `We don't have any lounges registered at ${airportCode} on our platform. Airport search includes destinations worldwide, even where we don't offer lounges yet.`
+					: 'No lounges have been registered yet. Please check back soon.'}
 			</p>
+			{airportCode && (
+				<button type="button" className={queryStatesStyles.retryButton} onClick={onReset}>
+					Show all lounges
+				</button>
+			)}
 		</div>
 	);
 }

@@ -3,4 +3,9 @@ type ErrorStateProps = {
 	isRetrying: boolean;
 };
 
-export type { ErrorStateProps };
+type EmptyStateProps = {
+  airportCode: string;
+  onReset: () => void;
+};
+
+export type { ErrorStateProps, EmptyStateProps };
