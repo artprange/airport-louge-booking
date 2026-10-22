@@ -1,9 +1,21 @@
 {
-  "dependencies": {
-    "zod": "^4.6.7"
+  "name": "lounge-booking",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.23.2 <23"
   },
-  "devDependencies": {
-    "@tailwindcss/vite": "^4.3.3",
-    "tailwindcss": "^4.3.3"
+  "scripts": {
+    "setup": "npm --prefix backend ci && npm --prefix frontend ci",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "db:up": "docker compose up -d",
+    "db:status": "docker compose ps",
+    "db:stop": "docker compose stop",
+    "lint": "npm --prefix backend run lint && npm --prefix frontend run lint",
+    "typecheck": "npm --prefix backend run typecheck && npm --prefix frontend run typecheck",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "test": "npm --prefix backend test",
+    "check": "npm run lint && npm test && npm --prefix frontend run build"
   }
 }
