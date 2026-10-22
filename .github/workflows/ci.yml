@@ -1,0 +1,69 @@
+name: Quality and containers
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: lounge_booking_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d lounge_booking_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      DATABASE_URL: postgresql://app:app@localhost:5432/lounge_booking_test?schema=public
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      - run: npm run setup
+      - run: npm run check
+      - run: npm --prefix backend run db:deploy
+      - run: npm --prefix backend run db:seed
+      - run: npm --prefix backend run test:db
+
+  containers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Build and start isolated stack
+        run: docker compose -f compose.app.yml up --build -d --wait --wait-timeout 180
+      - name: Seed demo lounges
+        run: docker compose -f compose.app.yml run --rm seed
+      - name: Check web, proxy, documentation and seeded lounges
+        run: npm run stack:smoke
+      - name: Container logs on failure
+        if: failure()
+        run: docker compose -f compose.app.yml logs --no-color
+      - name: Remove CI stack and its disposable volume
+        if: always()
+        run: docker compose -f compose.app.yml down --volumes
