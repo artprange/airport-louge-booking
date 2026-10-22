@@ -1,7 +1,32 @@
 @import 'tailwindcss';
 
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+}
+
+:root {
+  --canvas: #fff8f2;
+  --surface: #ffffff;
+  --ink: #292018;
+  --muted: #756354;
+  --line: #eadfd5;
+  --brand: #c2410c;
+  --brand-hover: #9a3412;
+  --brand-soft: #ffedd5;
+}
+
 @layer base {
-	body {
-		@apply m-0 min-w-80 bg-slate-50 font-sans text-slate-900 antialiased;
-	}
+  body {
+    @apply m-0 min-w-80 bg-canvas font-sans text-ink antialiased;
+    min-height: 100svh;
+    background-image: radial-gradient(ellipse at 95% 0%, #ffedd5 0%, transparent 48%);
+  }
+  button, input { font: inherit; }
 }

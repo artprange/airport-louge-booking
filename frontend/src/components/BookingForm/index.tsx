@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { createBooking } from '../../api/bookings';
@@ -33,8 +33,9 @@ function getBookingErrorMessage(error: Error): string {
 	);
 }
 
-function BookingForm({ lounge, onClose }: BookingFormProps) {
+function BookingForm({ lounge, onClose, onPendingChange }: BookingFormProps) {
 	const fieldId = useId();
+	const confirmationRef = useRef<HTMLDivElement>(null);
 	const queryClient = useQueryClient();
 
 	const [customerName, setCustomerName] = useState('');
@@ -44,6 +45,7 @@ function BookingForm({ lounge, onClose }: BookingFormProps) {
 	const today = new Date().toISOString().slice(0, 10);
 
 	const mutation = useMutation({
+		mutationKey: ['create-booking', lounge.id],
 		mutationFn: createBooking,
 
 		retry: false,
@@ -53,7 +55,12 @@ function BookingForm({ lounge, onClose }: BookingFormProps) {
 				queryKey: ['bookings'],
 			});
 		},
+		onSettled: () => onPendingChange(false),
 	});
+
+	useEffect(() => {
+		if (mutation.isSuccess) confirmationRef.current?.focus();
+	}, [mutation.isSuccess]);
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -62,6 +69,7 @@ function BookingForm({ lounge, onClose }: BookingFormProps) {
 			return;
 		}
 
+		onPendingChange(true);
 		mutation.mutate({
 			loungeId: lounge.id,
 			customerName: customerName.trim(),
@@ -79,6 +87,8 @@ function BookingForm({ lounge, onClose }: BookingFormProps) {
 				aria-label="Booking confirmation"
 			>
 				<div
+					ref={confirmationRef}
+					tabIndex={-1}
 					className={bookingFormStyles.success}
 					role="status"
 				>
