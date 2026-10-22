@@ -2,6 +2,7 @@ import type { ErrorRequestHandler } from 'express';
 import { ZodError } from 'zod';
 
 import { AppError } from '../errors/app-error.js';
+import { logger } from '../lib/logger.js';
 
 function hasErrorType(error: unknown, type: string): boolean {
 	return error instanceof Error && 'type' in error && error.type === type;
@@ -39,7 +40,7 @@ export const errorHandler: ErrorRequestHandler = (
 		code = 'PAYLOAD_TOO_LARGE';
 		message = 'Request body exceeds the allowed size';
 	} else {
-		console.error('Unhandled application error:', error);
+		logger.error({ err: error, requestId: res.locals.requestId }, 'Unhandled application error');
 
 		statusCode = 500;
 		code = 'INTERNAL_SERVER_ERROR';

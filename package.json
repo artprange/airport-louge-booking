@@ -6,6 +6,10 @@
     "node": ">=22.23.2 <23"
   },
   "scripts": {
+    "stack:up": "docker compose -f compose.app.yml up --build -d --wait --wait-timeout 180",
+    "stack:seed": "docker compose -f compose.app.yml run --rm seed",
+    "stack:stop": "docker compose -f compose.app.yml stop",
+    "stack:smoke": "node scripts/smoke-stack.mjs",
     "setup": "npm --prefix backend ci && npm --prefix frontend ci",
     "dev:backend": "npm --prefix backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
