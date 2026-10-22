@@ -9,9 +9,16 @@ import { loungesPageStyles } from './styles';
 
 function LoungesPage() {
   const [airportCode, setAirportCode] = useState('');
+  const [filterRevision, setFilterRevision] = useState(0);
   const [selectedLounge, setSelectedLounge] = useState<Lounge | null>(null);
   const query = useLounges(airportCode);
   const closeBooking = useCallback(() => setSelectedLounge(null), []);
+
+  function resetAirportFilter() {
+    setAirportCode('');
+    // Remount the filter to clear its text, selected airport and suggestions.
+    setFilterRevision((revision) => revision + 1);
+  }
 
   return (
     <main className={loungesPageStyles.container}>
@@ -33,7 +40,7 @@ function LoungesPage() {
           Find a quiet corner before takeoff. Explore airport lounges and book your next visit in a few simple steps.
         </p>
       </header>
-      <AirportFilter onApply={setAirportCode} />
+      <AirportFilter key={filterRevision} onApply={setAirportCode} autoFocus={filterRevision > 0} />
       <section aria-label="Search results" aria-busy={query.isFetching}>
         <div className={loungesPageStyles.resultsHeader}>
           <h2 className={loungesPageStyles.resultsTitle}>Explore lounges</h2>
@@ -44,7 +51,7 @@ function LoungesPage() {
         </div>
         {query.isPending && <LoadingState />}
         {query.isError && <ErrorState isRetrying={query.isFetching} onRetry={() => { void query.refetch(); }} />}
-        {query.isSuccess && (query.data.length === 0 ? <EmptyState /> : <>
+        {query.isSuccess && (query.data.length === 0 ? <EmptyState airportCode={airportCode} onReset={resetAirportFilter} /> : <>
           <div className={loungesPageStyles.tableHeader} aria-hidden="true">
             <span>Airport</span><span>Lounge</span><span>Daily capacity</span><span>Price · BRL</span><span />
           </div>
@@ -54,7 +61,7 @@ function LoungesPage() {
         </>)}
       </section>
       <p className={loungesPageStyles.footer}>
-        Prices are in Brazilian reais. Daily capacity is the total guest limit; availability is confirmed when you book.
+        Demo lounges: names, prices and capacities are fictional. Prices are in Brazilian reais. Availability is confirmed when you book.
       </p>
       {selectedLounge && <BookingModal key={selectedLounge.id} lounge={selectedLounge} onClose={closeBooking} />}
     </main>
